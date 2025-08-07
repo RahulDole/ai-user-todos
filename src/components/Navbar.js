@@ -33,16 +33,6 @@ function Navbar() {
               Register
             </Link>
           </li>
-          <li className="nav-item">
-            <Link to="/features" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-              Features
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-              About
-            </Link>
-          </li>
         </ul>
       </div>
     </nav>

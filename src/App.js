@@ -13,9 +13,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Registration />} />
-            {/* These routes are placeholders for future development */}
-            <Route path="/features" element={<h2>Features Page Coming Soon</h2>} />
-            <Route path="/about" element={<h2>About Page Coming Soon</h2>} />
           </Routes>
         </div>
       </div>
