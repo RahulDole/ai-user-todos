@@ -4,30 +4,36 @@ import './Registration.css';
 function Registration() {
   // State for form fields
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   
   // State for form errors
   const [errors, setErrors] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   
   // State for form submission
   const [isSubmitted, setIsSubmitted] = useState(false);
   
-  // Validate username
-  const validateUsername = (username) => {
-    if (!username) {
-      return 'Username is required';
+  // Validate email
+  const validateEmail = (email) => {
+    if (!email) {
+      return 'Email is required';
     }
-    if (username.length < 4) {
-      return 'Username must be at least 4 characters long';
+    
+    // Email regex pattern to validate:
+    // - Must contain @ symbol
+    // - Must have characters before @ (local part)
+    // - Must have domain after @ with at least one dot
+    // - No illegal characters
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address (e.g., name@example.com)';
     }
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      return 'Username can only contain letters, numbers, and underscores';
-    }
+    
     return '';
   };
   
@@ -71,12 +77,12 @@ function Registration() {
     e.preventDefault();
     
     // Validate form
-    const usernameError = validateUsername(formData.username);
+    const emailError = validateEmail(formData.email);
     const passwordError = validatePassword(formData.password);
     
-    if (usernameError || passwordError) {
+    if (emailError || passwordError) {
       setErrors({
-        username: usernameError,
+        email: emailError,
         password: passwordError
       });
       return;
@@ -94,21 +100,22 @@ function Registration() {
       {isSubmitted ? (
         <div className="success-message">
           <h3>Registration Successful!</h3>
-          <p>Thank you for registering, {formData.username}!</p>
+          <p>Thank you for registering with {formData.email}!</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="email">Email Address</label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              className={errors.username ? 'error-input' : ''}
+              className={errors.email ? 'error-input' : ''}
+              placeholder="name@example.com"
             />
-            {errors.username && <div className="error-message">{errors.username}</div>}
+            {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
           
           <div className="form-group">
