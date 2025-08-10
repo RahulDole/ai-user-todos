@@ -17,6 +17,14 @@ function Registration() {
   // State for form submission
   const [isSubmitted, setIsSubmitted] = useState(false);
   
+  // State for API-related status
+  const [apiStatus, setApiStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+    message: ''
+  });
+  
   // Validate email
   const validateEmail = (email) => {
     if (!email) {
@@ -73,7 +81,7 @@ function Registration() {
   };
   
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate form
@@ -88,9 +96,69 @@ function Registration() {
       return;
     }
     
-    // Here you would typically send the data to a server
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+    // Reset API status
+    setApiStatus({
+      loading: true,
+      error: null,
+      success: false,
+      message: ''
+    });
+    
+    try {
+      // Make API call to register endpoint
+      const response = await fetch(
+        'https://identity-service-365603594789.europe-west1.run.app/api/v1/auth/register',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: formData.email, // Using email as username for the API
+            password: formData.password
+          })
+        }
+      );
+      
+      // Parse the response
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // Handle error response from server
+        throw new Error(data.message || `Server error: ${response.status}`);
+      }
+      
+      // Handle successful response
+      setApiStatus({
+        loading: false,
+        error: null,
+        success: true,
+        message: 'Registration successful!'
+      });
+      
+      console.log('Registration successful:', data);
+      setIsSubmitted(true);
+      
+    } catch (error) {
+      // Handle error response
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      console.error('Registration error:', error);
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error instanceof TypeError) {
+        // Network error
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      setApiStatus({
+        loading: false,
+        error: errorMessage,
+        success: false,
+        message: ''
+      });
+    }
   };
   
   return (
@@ -104,6 +172,12 @@ function Registration() {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
+          {apiStatus.error && (
+            <div className="error-message api-error">
+              {apiStatus.error}
+            </div>
+          )}
+          
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
@@ -114,6 +188,7 @@ function Registration() {
               onChange={handleChange}
               className={errors.email ? 'error-input' : ''}
               placeholder="name@example.com"
+              disabled={apiStatus.loading}
             />
             {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
@@ -127,6 +202,7 @@ function Registration() {
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? 'error-input' : ''}
+              disabled={apiStatus.loading}
             />
             {errors.password && <div className="error-message">{errors.password}</div>}
           </div>
@@ -141,7 +217,13 @@ function Registration() {
             </ul>
           </div>
           
-          <button type="submit" className="submit-btn">Register</button>
+          <button 
+            type="submit" 
+            className="submit-btn" 
+            disabled={apiStatus.loading}
+          >
+            {apiStatus.loading ? 'Registering...' : 'Register'}
+          </button>
         </form>
       )}
     </div>
