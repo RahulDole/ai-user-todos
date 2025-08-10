@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Registration from './Registration';
 
 // Mock the global fetch function
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 describe('Registration Component', () => {
   beforeEach(() => {

@@ -1,7 +1,7 @@
 // Mock for react-router-dom
-module.exports = {
-  BrowserRouter: ({ children }) => children,
-  Routes: ({ children }) => children,
-  Route: ({ element }) => element,
-  Link: ({ children, to }) => <a href={to}>{children}</a>
-};
+const BrowserRouter = ({ children }) => children;
+const Routes = ({ children }) => children;
+const Route = ({ element }) => element;
+const Link = ({ children, to }) => <a href={to}>{children}</a>;
+
+export { BrowserRouter, Routes, Route, Link };
