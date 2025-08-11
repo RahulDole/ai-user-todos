@@ -79,7 +79,7 @@ describe('Login Component', () => {
     // Mock successful fetch response with token
     global.fetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, message: 'Login successful', token: 'test-auth-token' })
+      json: async () => ({ success: true, message: 'Login successful', access_token: 'test-auth-token' })
     });
     
     render(<Login />);

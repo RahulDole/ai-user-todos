@@ -127,8 +127,8 @@ function Login() {
       console.log('Login successful:', data);
       
       // Store the token in localStorage for session management
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
+      if (data.access_token) {
+        localStorage.setItem('authToken', data.access_token);
       }
       
       setIsSubmitted(true);
