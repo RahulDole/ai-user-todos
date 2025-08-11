@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Login.css';
 
-function Login() {
+function Login({ setAuthState }) {
   // State for form fields
   const [formData, setFormData] = useState({
     email: '',
@@ -129,6 +129,13 @@ function Login() {
       // Store the token in localStorage for session management
       if (data.access_token) {
         localStorage.setItem('authToken', data.access_token);
+        
+        // Update auth state in parent component
+        setAuthState({
+          isAuthenticated: true,
+          user: { email: formData.email },
+          loading: false
+        });
       }
       
       setIsSubmitted(true);

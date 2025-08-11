@@ -53,6 +53,33 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Welcome Message */
+.welcome-message {
+  color: white;
+  font-size: 1rem;
+  margin-right: 20px;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Logout Button */
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
 /* Hamburger Menu Icon */
 .menu-icon {
   display: none;
@@ -92,6 +119,11 @@
     visibility: hidden;
     transition: all 0.3s ease-in-out;
     z-index: 1;
+  }
+  
+  .welcome-message {
+    margin: 10px 20px;
+    text-align: center;
   }
 
   .nav-menu.active {

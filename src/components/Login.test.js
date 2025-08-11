@@ -31,7 +31,8 @@ describe('Login Component', () => {
   });
 
   test('renders login form', () => {
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Check if the form elements are rendered
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
@@ -40,7 +41,8 @@ describe('Login Component', () => {
   });
   
   test('displays validation errors for empty fields', () => {
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Submit the form without filling in any fields
     fireEvent.click(screen.getByRole('button', { name: /login/i }));
@@ -51,7 +53,8 @@ describe('Login Component', () => {
   });
   
   test('validates email format requirements', () => {
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Enter an email without @ symbol
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'invalidemail.com' } });
@@ -82,7 +85,8 @@ describe('Login Component', () => {
       json: async () => ({ success: true, message: 'Login successful', access_token: 'test-auth-token' })
     });
     
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Enter valid email and password
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'valid.user@example.com' } });
@@ -116,6 +120,13 @@ describe('Login Component', () => {
     
     // Verify that the token was stored in localStorage
     expect(localStorage.setItem).toHaveBeenCalledWith('authToken', 'test-auth-token');
+    
+    // Verify that setAuthState was called with the correct arguments
+    expect(mockSetAuthState).toHaveBeenCalledWith({
+      isAuthenticated: true,
+      user: { email: 'valid.user@example.com' },
+      loading: false
+    });
   });
   
   test('shows error message on server error', async () => {
@@ -126,7 +137,8 @@ describe('Login Component', () => {
       json: async () => ({ message: 'Invalid credentials' })
     });
     
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Enter valid email and password
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'valid.user@example.com' } });
@@ -149,7 +161,8 @@ describe('Login Component', () => {
     // Mock network failure
     global.fetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
     
-    render(<Login />);
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
     
     // Enter valid email and password
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'valid.user@example.com' } });
