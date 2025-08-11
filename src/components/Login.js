@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import './Registration.css';
+import './Login.css';
 
-function Registration() {
+function Login() {
   // State for form fields
   const [formData, setFormData] = useState({
     email: '',
@@ -50,18 +50,6 @@ function Registration() {
     if (!password) {
       return 'Password is required';
     }
-    if (password.length < 8) {
-      return 'Password must be at least 8 characters long';
-    }
-    if (!/[A-Z]/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/[a-z]/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/[0-9]/.test(password)) {
-      return 'Password must contain at least one number';
-    }
     return '';
   };
   
@@ -105,9 +93,9 @@ function Registration() {
     });
     
     try {
-      // Make API call to register endpoint
+      // Make API call to login endpoint
       const response = await fetch(
-        'https://identity-service-365603594789.europe-west1.run.app/api/v1/auth/register',
+        'https://identity-service-365603594789.europe-west1.run.app/api/v1/auth/login',
         {
           method: 'POST',
           headers: {
@@ -133,17 +121,23 @@ function Registration() {
         loading: false,
         error: null,
         success: true,
-        message: 'Registration successful!'
+        message: 'Login successful!'
       });
       
-      console.log('Registration successful:', data);
+      console.log('Login successful:', data);
+      
+      // Store the token in localStorage for session management
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      
       setIsSubmitted(true);
       
     } catch (error) {
       // Handle error response
-      let errorMessage = 'Registration failed. Please try again.';
+      let errorMessage = 'Login failed. Please try again.';
       
-      console.error('Registration error:', error);
+      console.error('Login error:', error);
       
       if (error.message) {
         errorMessage = error.message;
@@ -162,13 +156,13 @@ function Registration() {
   };
   
   return (
-    <div className="registration-container">
-      <h2>User Registration</h2>
+    <div className="login-container">
+      <h2>User Login</h2>
       
       {isSubmitted ? (
         <div className="success-message">
-          <h3>Registration Successful!</h3>
-          <p>Thank you for registering with {formData.email}!</p>
+          <h3>Login Successful!</h3>
+          <p>Welcome back, {formData.email}!</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -207,22 +201,12 @@ function Registration() {
             {errors.password && <div className="error-message">{errors.password}</div>}
           </div>
           
-          <div className="password-requirements">
-            <p>Password must:</p>
-            <ul>
-              <li>Be at least 8 characters long</li>
-              <li>Contain at least one uppercase letter</li>
-              <li>Contain at least one lowercase letter</li>
-              <li>Contain at least one number</li>
-            </ul>
-          </div>
-          
           <button 
             type="submit" 
             className="submit-btn" 
             disabled={apiStatus.loading}
           >
-            {apiStatus.loading ? 'Registering...' : 'Register'}
+            {apiStatus.loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
       )}
@@ -230,4 +214,4 @@ function Registration() {
   );
 }
 
-export default Registration;
+export default Login;
