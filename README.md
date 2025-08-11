@@ -68,3 +68,32 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Node.js Version Upgrade
+
+This project has been upgraded to use Node.js v22.18.0 (LTS) and npm v10.9.3. The upgrade process included:
+
+1. Creating a `.nvmrc` file to specify Node.js v22.18.0
+2. Updating dependencies to their latest compatible versions:
+   - @testing-library/user-event from 13.5.0 to 14.6.1
+   - react-router-dom from 7.7.1 to 7.8.0
+   - web-vitals from 2.1.4 to 5.1.0
+
+3. Updating code to use the latest web-vitals API:
+   - Changed `getCLS`, `getFID`, etc. to `onCLS`, `onFID`, etc. in `reportWebVitals.js`
+
+### Breaking Changes
+
+No breaking changes were identified during the upgrade process. All tests pass with the new Node.js version.
+
+### Development Requirements
+
+To develop this project, you need:
+- Node.js v22.18.0 or later
+- npm v10.9.3 or later
+
+If you have [nvm](https://github.com/nvm-sh/nvm) installed, you can simply run:
+```
+nvm use
+```
+This will automatically use the correct Node.js version specified in the `.nvmrc` file.
