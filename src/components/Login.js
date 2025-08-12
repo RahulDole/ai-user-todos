@@ -1,6 +1,73 @@
 import React, { useState } from 'react';
 import './Login.css';
 
+/**
+ * Helper function to format error messages with guidance and recovery options
+ * @param {string} errorMessage - The raw error message from the server or client
+ * @returns {Object} Formatted error with title, message, and recovery option
+ */
+const formatErrorMessage = (errorMessage) => {
+  // Default error (fallback)
+  let formattedError = {
+    title: 'Login Failed',
+    message: 'We couldn\'t log you in. Please try again.',
+    recovery: 'If the problem persists, please contact support.'
+  };
+
+  // Check for specific error patterns and provide tailored responses
+  if (errorMessage.includes('Invalid credentials') ||
+      errorMessage.includes('incorrect password') ||
+      errorMessage.includes('401')) {
+    formattedError = {
+      title: 'Incorrect Email or Password',
+      message: 'The email or password you entered doesn\'t match our records.',
+      recovery: 'Double-check your information and try again, or reset your password.'
+    };
+  } else if (errorMessage.includes('account locked') ||
+             errorMessage.includes('too many attempts') ||
+             errorMessage.includes('temporarily disabled')) {
+    formattedError = {
+      title: 'Account Temporarily Locked',
+      message: 'Your account has been temporarily locked due to multiple failed login attempts.',
+      recovery: 'Please wait 30 minutes before trying again, or reset your password now.'
+    };
+  } else if (errorMessage.includes('account not found') ||
+             errorMessage.includes('user not found') ||
+             errorMessage.includes('no account')) {
+    formattedError = {
+      title: 'Account Not Found',
+      message: 'We couldn\'t find an account with that email address.',
+      recovery: 'Check your spelling or create a new account.'
+    };
+  } else if (errorMessage.includes('not verified') ||
+             errorMessage.includes('verification required') ||
+             errorMessage.includes('confirm your email')) {
+    formattedError = {
+      title: 'Email Not Verified',
+      message: 'Your email address hasn\'t been verified yet.',
+      recovery: 'Please check your inbox for a verification email or request a new one.'
+    };
+  } else if (errorMessage.includes('Network error') ||
+             errorMessage.includes('Failed to fetch') ||
+             errorMessage.includes('connection')) {
+    formattedError = {
+      title: 'Connection Problem',
+      message: 'We couldn\'t connect to our servers.',
+      recovery: 'Please check your internet connection and try again.'
+    };
+  } else if (errorMessage.includes('server error') ||
+             errorMessage.includes('500') ||
+             errorMessage.includes('unavailable')) {
+    formattedError = {
+      title: 'Service Unavailable',
+      message: 'Our service is temporarily unavailable.',
+      recovery: 'Please try again later. Our team has been notified of the issue.'
+    };
+  }
+
+  return formattedError;
+};
+
 function Login({ setAuthState }) {
   // State for form fields
   const [formData, setFormData] = useState({
@@ -153,9 +220,12 @@ function Login({ setAuthState }) {
         errorMessage = 'Network error. Please check your connection.';
       }
       
+      // Format the error message with guidance and recovery options
+      const formattedError = formatErrorMessage(errorMessage);
+      
       setApiStatus({
         loading: false,
-        error: errorMessage,
+        error: formattedError,
         success: false,
         message: ''
       });
@@ -174,8 +244,10 @@ function Login({ setAuthState }) {
       ) : (
         <form onSubmit={handleSubmit}>
           {apiStatus.error && (
-            <div className="error-message api-error">
-              {apiStatus.error}
+            <div className="error-message-container">
+              <div className="error-title">{apiStatus.error.title}</div>
+              <div className="error-message api-error">{apiStatus.error.message}</div>
+              <div className="error-recovery">{apiStatus.error.recovery}</div>
             </div>
           )}
           

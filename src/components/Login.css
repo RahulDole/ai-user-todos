@@ -78,3 +78,58 @@ input:focus {
   margin-top: 5px;
   text-align: left;
 }
+
+/* Enhanced error message styling */
+.error-message-container {
+  background-color: #fff8f8;
+  border: 1px solid #ffcdd2;
+  border-left: 4px solid #d32f2f;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.error-title {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.error-message.api-error {
+  color: #555;
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.error-recovery {
+  color: #555;
+  font-size: 14px;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .submit-btn {
+    transition: none;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .error-message-container {
+    padding: 10px 12px;
+  }
+  
+  .error-title {
+    font-size: 15px;
+  }
+  
+  .error-message.api-error,
+  .error-recovery {
+    font-size: 13px;
+  }
+}

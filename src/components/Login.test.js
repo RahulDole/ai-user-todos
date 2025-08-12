@@ -149,8 +149,12 @@ describe('Login Component', () => {
     
     // Wait for the async operation to complete
     await waitFor(() => {
+      // Check if error title is displayed
+      expect(screen.getByText('Incorrect Email or Password')).toBeInTheDocument();
       // Check if error message is displayed
-      expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument();
+      expect(screen.getByText("The email or password you entered doesn't match our records.")).toBeInTheDocument();
+      // Check if recovery option is displayed
+      expect(screen.getByText(/Double-check your information and try again/i)).toBeInTheDocument();
     });
     
     // Verify that the token was not stored in localStorage
@@ -173,8 +177,44 @@ describe('Login Component', () => {
     
     // Wait for the async operation to complete
     await waitFor(() => {
+      // Check if error title is displayed
+      expect(screen.getByText('Connection Problem')).toBeInTheDocument();
       // Check if error message is displayed
-      expect(screen.getByText(/failed to fetch/i)).toBeInTheDocument();
+      expect(screen.getByText("We couldn't connect to our servers.")).toBeInTheDocument();
+      // Check if recovery option is displayed
+      expect(screen.getByText(/Please check your internet connection/i)).toBeInTheDocument();
+    });
+    
+    // Verify that the token was not stored in localStorage
+    expect(localStorage.setItem).not.toHaveBeenCalled();
+  });
+  
+  test('shows appropriate error message for account lockout', async () => {
+    // Mock account lockout response
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      json: async () => ({ message: 'Account temporarily locked due to too many attempts' })
+    });
+    
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
+    
+    // Enter valid email and password
+    fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'valid.user@example.com' } });
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'Password123' } });
+    
+    // Submit the form
+    fireEvent.click(screen.getByRole('button', { name: /login/i }));
+    
+    // Wait for the async operation to complete
+    await waitFor(() => {
+      // Check if error title is displayed
+      expect(screen.getByText('Account Temporarily Locked')).toBeInTheDocument();
+      // Check if error message is displayed
+      expect(screen.getByText(/Your account has been temporarily locked/i)).toBeInTheDocument();
+      // Check if recovery option is displayed
+      expect(screen.getByText(/Please wait 30 minutes before trying again/i)).toBeInTheDocument();
     });
     
     // Verify that the token was not stored in localStorage
