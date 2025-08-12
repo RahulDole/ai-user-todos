@@ -42,11 +42,20 @@ function Navbar({ authState }) {
               Home
             </Link>
           </li>
-          <li className="nav-item">
-            <Link to="/register" className="nav-link" onClick={() => setIsMenuOpen(false)}>
-              Register
-            </Link>
-          </li>
+          {!isAuthenticated && (
+            <li className="nav-item">
+              <Link to="/register" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                Register
+              </Link>
+            </li>
+          )}
+          {isAuthenticated && (
+            <li className="nav-item">
+              <Link to="/mytodos" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                My ToDos
+              </Link>
+            </li>
+          )}
           {!isAuthenticated && !loading && (
             <li className="nav-item">
               <Link to="/login" className="nav-link" onClick={() => setIsMenuOpen(false)}>

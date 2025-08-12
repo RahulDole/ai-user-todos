@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 
-function Home() {
+function Home({ isAuthenticated }) {
   return (
     <div className="home-container">
       <section className="hero-section">
@@ -10,9 +10,15 @@ function Home() {
         <p className="hero-text">
           A simple and efficient way to organize your tasks and boost your productivity.
         </p>
-        <Link to="/register" className="cta-button">
-          Sign Up Now
-        </Link>
+        {isAuthenticated ? (
+          <Link to="/mytodos" className="cta-button">
+            Check your To Do list now!
+          </Link>
+        ) : (
+          <Link to="/register" className="cta-button">
+            Sign Up Now
+          </Link>
+        )}
       </section>
 
       <section className="features-section">

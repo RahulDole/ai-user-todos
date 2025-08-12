@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Registration from './components/Registration';
 import Login from './components/Login';
 import Home from './components/Home';
+import MyTodos from './components/MyTodos';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -82,9 +83,17 @@ function App() {
         <Navbar authState={authState} />
         <div className="content-container">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home isAuthenticated={authState.isAuthenticated} />} />
             <Route path="/register" element={<Registration />} />
             <Route path="/login" element={<Login setAuthState={setAuthState} />} />
+            <Route
+              path="/mytodos"
+              element={
+                authState.isAuthenticated ?
+                <MyTodos /> :
+                <Login setAuthState={setAuthState} />
+              }
+            />
           </Routes>
         </div>
       </div>

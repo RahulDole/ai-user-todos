@@ -22,3 +22,7 @@ h1, h2 {
   color: #333;
   margin-bottom: 30px;
 }
+
+input {
+  box-sizing: border-box;
+}
