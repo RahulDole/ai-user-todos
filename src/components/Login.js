@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css';
 
 /**
@@ -72,6 +72,7 @@ const formatErrorMessage = (errorMessage) => {
 function Login({ setAuthState }) {
   // Get location object to check if redirected from registration
   const location = useLocation();
+  const navigate = useNavigate();
   const emailInputRef = useRef(null);
   
   // State for registration success message
@@ -102,6 +103,15 @@ function Login({ setAuthState }) {
     success: false,
     message: ''
   });
+  
+  // State for redirection countdown
+  const [redirectCountdown, setRedirectCountdown] = useState(3);
+  
+  // State to track if redirection is in progress
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  
+  // State to track redirection errors
+  const [redirectError, setRedirectError] = useState(null);
   
   // Check if redirected from registration
   useEffect(() => {
@@ -242,6 +252,9 @@ function Login({ setAuthState }) {
       
       setIsSubmitted(true);
       
+      // Start redirection process
+      setIsRedirecting(true);
+      
     } catch (error) {
       // Handle error response
       let errorMessage = 'Login failed. Please try again.';
@@ -267,6 +280,39 @@ function Login({ setAuthState }) {
     }
   };
   
+  // Effect for countdown timer and redirection
+  useEffect(() => {
+    let timerId;
+    
+    if (isRedirecting && redirectCountdown > 0) {
+      timerId = setTimeout(() => {
+        setRedirectCountdown(prevCount => prevCount - 1);
+      }, 1000);
+    } else if (isRedirecting && redirectCountdown === 0) {
+      try {
+        // Navigate to home page
+        navigate('/');
+      } catch (error) {
+        console.error('Navigation error:', error);
+        setRedirectError('Failed to redirect to home page. Please use the button below.');
+      }
+    }
+    
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [isRedirecting, redirectCountdown, navigate]);
+  
+  // Handle manual navigation
+  const handleManualNavigation = () => {
+    try {
+      navigate('/');
+    } catch (error) {
+      console.error('Manual navigation error:', error);
+      setRedirectError('Failed to navigate to home page. Please try again or refresh the page.');
+    }
+  };
+  
   return (
     <div className="login-container">
       <h2>User Login</h2>
@@ -275,6 +321,30 @@ function Login({ setAuthState }) {
         <div className="success-message">
           <h3>Login Successful!</h3>
           <p>Welcome back, {formData.email}!</p>
+          
+          {isRedirecting && (
+            <div className="redirect-message">
+              <p>You will be redirected to the home page in {redirectCountdown} second{redirectCountdown !== 1 ? 's' : ''}.</p>
+              <div className="progress-bar" data-testid="progress-bar">
+                <div
+                  className="progress"
+                  style={{ width: `${((3 - redirectCountdown) / 3) * 100}%` }}
+                ></div>
+              </div>
+              <button
+                onClick={handleManualNavigation}
+                className="go-home-btn"
+              >
+                Go to Home
+              </button>
+              
+              {redirectError && (
+                <div className="redirect-error">
+                  <p>{redirectError}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
