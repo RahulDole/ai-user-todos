@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Registration.css';
 
 function Registration() {
+  // Get navigate function from react-router
+  const navigate = useNavigate();
   // State for form fields
   const [formData, setFormData] = useState({
     email: '',
@@ -137,7 +140,15 @@ function Registration() {
       });
       
       console.log('Registration successful:', data);
-      setIsSubmitted(true);
+      
+      // Instead of showing success message in Registration component,
+      // redirect to login page with user's email and registration success flag
+      navigate('/login', {
+        state: {
+          fromRegistration: true,
+          email: formData.email
+        }
+      });
       
     } catch (error) {
       // Handle error response

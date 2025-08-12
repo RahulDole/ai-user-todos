@@ -1,6 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Login from './Login';
+import { useLocation } from 'react-router-dom';
+
+// Mock useLocation hook
+jest.mock('react-router-dom');
 
 // Mock the global fetch function
 globalThis.fetch = jest.fn();
@@ -127,6 +131,31 @@ describe('Login Component', () => {
       user: { email: 'valid.user@example.com' },
       loading: false
     });
+  });
+  
+  test('displays registration success message when redirected from registration', () => {
+    // Mock the useLocation hook to simulate redirect from registration
+    useLocation.mockReturnValue({
+      state: {
+        fromRegistration: true,
+        email: 'new.user@example.com'
+      }
+    });
+    
+    const mockSetAuthState = jest.fn();
+    render(<Login setAuthState={mockSetAuthState} />);
+    
+    // Check if registration success message is displayed
+    expect(screen.getByText('Account Created Successfully!')).toBeInTheDocument();
+    expect(screen.getByText(/Your account with new.user@example.com has been created/i)).toBeInTheDocument();
+    expect(screen.getByText(/Please sign in with your credentials/i)).toBeInTheDocument();
+    
+    // Check if email field is pre-filled with the email from registration
+    const emailInput = screen.getByLabelText(/email address/i);
+    expect(emailInput).toHaveValue('new.user@example.com');
+    
+    // Reset the mock for other tests
+    useLocation.mockReset();
   });
   
   test('shows error message on server error', async () => {

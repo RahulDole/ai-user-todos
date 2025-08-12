@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import './Login.css';
 
 /**
@@ -69,6 +70,16 @@ const formatErrorMessage = (errorMessage) => {
 };
 
 function Login({ setAuthState }) {
+  // Get location object to check if redirected from registration
+  const location = useLocation();
+  const emailInputRef = useRef(null);
+  
+  // State for registration success message
+  const [registrationSuccess, setRegistrationSuccess] = useState({
+    show: false,
+    email: ''
+  });
+  
   // State for form fields
   const [formData, setFormData] = useState({
     email: '',
@@ -91,6 +102,30 @@ function Login({ setAuthState }) {
     success: false,
     message: ''
   });
+  
+  // Check if redirected from registration
+  useEffect(() => {
+    // Check if location and location.state exist before accessing properties
+    if (location && location.state && location.state.fromRegistration) {
+      setRegistrationSuccess({
+        show: true,
+        email: location.state.email || ''
+      });
+      
+      // Set email field if provided from registration
+      if (location.state.email) {
+        setFormData(prev => ({
+          ...prev,
+          email: location.state.email
+        }));
+      }
+      
+      // Focus on email input field
+      if (emailInputRef.current) {
+        emailInputRef.current.focus();
+      }
+    }
+  }, [location]);
   
   // Validate email
   const validateEmail = (email) => {
@@ -243,6 +278,18 @@ function Login({ setAuthState }) {
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
+          {registrationSuccess.show && (
+            <div className="success-message registration-success">
+              <div className="success-title">Account Created Successfully!</div>
+              <div className="success-message-text">
+                Your account with {registrationSuccess.email} has been created.
+              </div>
+              <div className="success-instruction">
+                Please sign in with your credentials to access your account.
+              </div>
+            </div>
+          )}
+          
           {apiStatus.error && (
             <div className="error-message-container">
               <div className="error-title">{apiStatus.error.title}</div>
@@ -254,6 +301,7 @@ function Login({ setAuthState }) {
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
+              ref={emailInputRef}
               type="email"
               id="email"
               name="email"
@@ -262,6 +310,7 @@ function Login({ setAuthState }) {
               className={errors.email ? 'error-input' : ''}
               placeholder="name@example.com"
               disabled={apiStatus.loading}
+              autoFocus
             />
             {errors.email && <div className="error-message">{errors.email}</div>}
           </div>

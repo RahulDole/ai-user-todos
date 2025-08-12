@@ -88,12 +88,15 @@ describe('Registration Component', () => {
     expect(screen.getByText(/password must contain at least one number/i)).toBeInTheDocument();
   });
   
-  test('shows success message on valid submission', async () => {
+  test('redirects to login page after successful registration', async () => {
     // Mock successful fetch response
     global.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true, message: 'User registered successfully' })
     });
+    
+    // Import navigate mock from our mock file
+    const { navigate } = require('react-router-dom');
     
     render(<Registration />);
     
@@ -106,9 +109,13 @@ describe('Registration Component', () => {
     
     // Wait for the async operation to complete
     await waitFor(() => {
-      // Check if success message is displayed
-      expect(screen.getByText(/registration successful/i)).toBeInTheDocument();
-      expect(screen.getByText(/thank you for registering with valid.user@example.com/i)).toBeInTheDocument();
+      // Check if navigate was called with the correct arguments
+      expect(navigate).toHaveBeenCalledWith('/login', {
+        state: {
+          fromRegistration: true,
+          email: 'valid.user@example.com'
+        }
+      });
     });
     
     // Verify that fetch was called with the correct arguments
