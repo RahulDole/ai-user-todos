@@ -10,6 +10,9 @@ function MyTodos() {
     { id: 3, text: 'Add a new task', completed: false }
   ]);
   const [newTodoText, setNewTodoText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   
   // Check authentication on component mount
   useEffect(() => {
@@ -19,19 +22,53 @@ function MyTodos() {
     }
   }, [navigate]);
 
-  // Add new todo
-  const handleAddTodo = (e) => {
+  // Add new todo using the REST API
+  const handleAddTodo = async (e) => {
     e.preventDefault();
     if (newTodoText.trim() === '') return;
     
-    const newTodo = {
-      id: Date.now(),
-      text: newTodoText,
-      completed: false
-    };
+    // Clear previous messages
+    setError(null);
+    setSuccessMessage(null);
+    setIsLoading(true);
     
-    setTodos([...todos, newTodo]);
-    setNewTodoText('');
+    try {
+      const authToken = localStorage.getItem('authToken');
+      
+      const response = await fetch('https://task-service-365603594789.europe-west1.run.app/api/v1/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken || ''}`
+        },
+        body: JSON.stringify({
+          title: newTodoText,
+          description: '' // Optional description field
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create task');
+      }
+      
+      // Add the new task to the local state
+      const newTodo = {
+        id: data.id || Date.now(), // Use server-provided ID or fallback
+        text: newTodoText,
+        completed: false
+      };
+      
+      setTodos([...todos, newTodo]);
+      setNewTodoText('');
+      setSuccessMessage('Task created successfully!');
+    } catch (error) {
+      console.error('Error creating task:', error);
+      setError(error.message || 'Failed to create task. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Toggle todo completion status
@@ -61,9 +98,28 @@ function MyTodos() {
             onChange={(e) => setNewTodoText(e.target.value)}
             placeholder="Add a new task..."
             className="todo-input"
+            disabled={isLoading}
           />
-          <button type="submit" className="add-todo-btn">Add Task</button>
+          <button
+            type="submit"
+            className="add-todo-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Creating...' : 'Add Task'}
+          </button>
         </form>
+        
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="success-message">
+            <p>{successMessage}</p>
+          </div>
+        )}
       </section>
 
       <section className="todos-list">
