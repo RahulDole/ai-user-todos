@@ -4,23 +4,70 @@ import './MyTodos.css';
 
 function MyTodos() {
   const navigate = useNavigate();
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Complete user registration', completed: true },
-    { id: 2, text: 'Explore the To Do List app', completed: false },
-    { id: 3, text: 'Add a new task', completed: false }
-  ]);
+  const [todos, setTodos] = useState([]);
   const [newTodoText, setNewTodoText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   
-  // Check authentication on component mount
+  // Check authentication and fetch tasks on component mount
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('authToken');
     if (!isAuthenticated) {
       navigate('/login');
+      return;
     }
+    
+    // Fetch tasks from the API
+    fetchTasks();
   }, [navigate]);
+  
+  // Function to fetch tasks from the API
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const authToken = localStorage.getItem('authToken');
+      
+      const response = await fetch('https://task-service-365603594789.europe-west1.run.app/api/v1/tasks', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken || ''}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch tasks');
+      }
+      
+      // Transform the API response to match our todo format
+      // Check if data is an array before mapping
+      const formattedTodos = Array.isArray(data)
+        ? data.map(task => ({
+            id: task.id,
+            text: task.title,
+            completed: task.completed || false
+          }))
+        : []; // Return empty array if data is not an array
+      
+      setTodos(formattedTodos);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      setError('Failed to load tasks. Please try again.');
+      
+      // Set default todos if we can't fetch from API
+      setTodos([
+        { id: 1, text: 'Complete user registration', completed: true },
+        { id: 2, text: 'Explore the To Do List app', completed: false },
+        { id: 3, text: 'Add a new task', completed: false }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Add new todo using the REST API
   const handleAddTodo = async (e) => {
@@ -90,6 +137,21 @@ function MyTodos() {
         <p>Manage your personal tasks and stay organized</p>
       </section>
 
+      {isLoading && (
+        <div className="loading-indicator">
+          <p>Loading your tasks...</p>
+        </div>
+      )}
+
+      {error && !isLoading && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={fetchTasks} className="retry-btn">
+            Retry
+          </button>
+        </div>
+      )}
+
       <section className="add-todo-section">
         <form onSubmit={handleAddTodo}>
           <input
@@ -123,7 +185,7 @@ function MyTodos() {
       </section>
 
       <section className="todos-list">
-        {todos.length === 0 ? (
+        {!isLoading && todos.length === 0 ? (
           <div className="empty-todos">
             <p>You don't have any tasks yet. Add your first task above!</p>
           </div>
