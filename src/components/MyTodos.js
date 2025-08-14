@@ -9,6 +9,7 @@ function MyTodos() {
   const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [deletingTaskId, setDeletingTaskId] = useState(null); // Track which task is being deleted
   
   // Check authentication and fetch tasks on component mount
   useEffect(() => {
@@ -125,9 +126,44 @@ function MyTodos() {
     ));
   };
 
-  // Delete todo
-  const deleteTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+  // Delete todo with confirmation and API call
+  const deleteTodo = async (id) => {
+    // Ask for confirmation before deleting
+    if (!window.confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+      return; // User cancelled the deletion
+    }
+    
+    // Clear previous messages
+    setError(null);
+    setSuccessMessage(null);
+    setDeletingTaskId(id); // Set the task being deleted
+    
+    try {
+      const authToken = localStorage.getItem('authToken');
+      
+      const response = await fetch(`https://task-service-365603594789.europe-west1.run.app/api/v1/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken || ''}`
+        }
+      });
+      
+      // For successful deletion, API returns 204 No Content
+      if (response.status === 204) {
+        // Remove the task from the local state
+        setTodos(todos.filter(todo => todo.id !== id));
+        setSuccessMessage('Task deleted successfully!');
+      } else {
+        // If not 204, try to parse error message from response
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to delete task');
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      setError(error.message || 'Failed to delete task. Please try again.');
+    } finally {
+      setDeletingTaskId(null); // Clear the deleting state
+    }
   };
 
   return (
@@ -202,11 +238,12 @@ function MyTodos() {
                   />
                   <span className="todo-text">{todo.text}</span>
                 </div>
-                <button 
+                <button
                   onClick={() => deleteTodo(todo.id)}
                   className="delete-todo-btn"
+                  disabled={deletingTaskId === todo.id}
                 >
-                  Delete
+                  {deletingTaskId === todo.id ? 'Deleting...' : 'Delete'}
                 </button>
               </li>
             ))}
