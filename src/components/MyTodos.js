@@ -50,7 +50,7 @@ function MyTodos() {
         ? data.map(task => ({
             id: task.id,
             text: task.title,
-            completed: task.completed || false
+            is_completed: task.is_completed || false
           }))
         : []; // Return empty array if data is not an array
       
@@ -61,9 +61,9 @@ function MyTodos() {
       
       // Set default todos if we can't fetch from API
       setTodos([
-        { id: 1, text: 'Complete user registration', completed: true },
-        { id: 2, text: 'Explore the To Do List app', completed: false },
-        { id: 3, text: 'Add a new task', completed: false }
+        { id: 1, text: 'Complete user registration', is_completed: true },
+        { id: 2, text: 'Explore the To Do List app', is_completed: false },
+        { id: 3, text: 'Add a new task', is_completed: false }
       ]);
     } finally {
       setIsLoading(false);
@@ -105,7 +105,7 @@ function MyTodos() {
       const newTodo = {
         id: data.id || Date.now(), // Use server-provided ID or fallback
         text: newTodoText,
-        completed: false
+        is_completed: false
       };
       
       setTodos([...todos, newTodo]);
@@ -119,11 +119,61 @@ function MyTodos() {
     }
   };
 
-  // Toggle todo completion status
-  const toggleTodoStatus = (id) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  // Toggle todo completion status with API call
+  const toggleTodoStatus = async (id) => {
+    // Clear previous messages
+    setError(null);
+    setSuccessMessage(null);
+    
+    // Find the todo and get its current completion status
+    const todoToUpdate = todos.find(todo => todo.id === id);
+    if (!todoToUpdate) return;
+    
+    // Optimistically update UI
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, is_completed: !todo.is_completed } : todo
     ));
+    
+    try {
+      const authToken = localStorage.getItem('authToken');
+      
+      // Make PUT request to update task status
+      const response = await fetch(`https://task-service-365603594789.europe-west1.run.app/api/v1/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken || ''}`
+        },
+        body: JSON.stringify({
+          title: todoToUpdate.text,
+          is_completed: !todoToUpdate.is_completed
+        })
+      });
+      
+      // Handle response
+      if (!response.ok) {
+        // If request fails, revert the optimistic update
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update task status');
+      }
+      
+      // Show success message
+      setSuccessMessage('Task status updated successfully!');
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      setError(error.message || 'Failed to update task status. Please try again.');
+      
+      // Revert the optimistic update if there was an error
+      setTodos(todos.map(todo =>
+        todo.id === id ? { ...todo, is_completed: todoToUpdate.is_completed } : todo
+      ));
+    }
   };
 
   // Delete todo with confirmation and API call
@@ -228,11 +278,11 @@ function MyTodos() {
         ) : (
           <ul>
             {todos.map(todo => (
-              <li key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+              <li key={todo.id} className={`todo-item ${todo.is_completed ? 'completed' : ''}`}>
                 <div className="todo-content">
                   <input
                     type="checkbox"
-                    checked={todo.completed}
+                    checked={todo.is_completed}
                     onChange={() => toggleTodoStatus(todo.id)}
                     className="todo-checkbox"
                   />
