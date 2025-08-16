@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MyTodos.css';
+import { useToast } from './Toast/ToastContext';
 
 function MyTodos() {
   const navigate = useNavigate();
@@ -8,8 +9,10 @@ function MyTodos() {
   const [newTodoText, setNewTodoText] = useState('');
   const [isLoading, setIsLoading] = useState(true); // Start with loading state
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const [deletingTaskId, setDeletingTaskId] = useState(null); // Track which task is being deleted
+  
+  // Use the toast context
+  const toast = useToast();
   
   // Check authentication and fetch tasks on component mount
   useEffect(() => {
@@ -58,6 +61,7 @@ function MyTodos() {
     } catch (error) {
       console.error('Error fetching tasks:', error);
       setError('Failed to load tasks. Please try again.');
+      toast.error('Failed to load tasks. Please try again.');
       
       // Set default todos if we can't fetch from API
       setTodos([
@@ -75,9 +79,8 @@ function MyTodos() {
     e.preventDefault();
     if (newTodoText.trim() === '') return;
     
-    // Clear previous messages
+    // Clear previous error state
     setError(null);
-    setSuccessMessage(null);
     setIsLoading(true);
     
     try {
@@ -110,10 +113,13 @@ function MyTodos() {
       
       setTodos([...todos, newTodo]);
       setNewTodoText('');
-      setSuccessMessage('Task created successfully!');
+      // Show success toast notification
+      toast.success('Task created successfully!');
     } catch (error) {
       console.error('Error creating task:', error);
-      setError(error.message || 'Failed to create task. Please try again.');
+      const errorMsg = error.message || 'Failed to create task. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -121,9 +127,8 @@ function MyTodos() {
 
   // Toggle todo completion status with API call
   const toggleTodoStatus = async (id) => {
-    // Clear previous messages
+    // Clear previous error state
     setError(null);
-    setSuccessMessage(null);
     
     // Find the todo and get its current completion status
     const todoToUpdate = todos.find(todo => todo.id === id);
@@ -157,17 +162,14 @@ function MyTodos() {
         throw new Error(errorData.message || 'Failed to update task status');
       }
       
-      // Show success message
-      setSuccessMessage('Task status updated successfully!');
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
+      // Show success toast notification
+      toast.success('Task status updated successfully!');
       
     } catch (error) {
       console.error('Error updating task status:', error);
-      setError(error.message || 'Failed to update task status. Please try again.');
+      const errorMsg = error.message || 'Failed to update task status. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       
       // Revert the optimistic update if there was an error
       setTodos(todos.map(todo =>
@@ -183,9 +185,8 @@ function MyTodos() {
       return; // User cancelled the deletion
     }
     
-    // Clear previous messages
+    // Clear previous error state
     setError(null);
-    setSuccessMessage(null);
     setDeletingTaskId(id); // Set the task being deleted
     
     try {
@@ -202,7 +203,7 @@ function MyTodos() {
       if (response.status === 204) {
         // Remove the task from the local state
         setTodos(todos.filter(todo => todo.id !== id));
-        setSuccessMessage('Task deleted successfully!');
+        toast.success('Task deleted successfully!');
       } else {
         // If not 204, try to parse error message from response
         const errorData = await response.json().catch(() => ({}));
@@ -210,7 +211,9 @@ function MyTodos() {
       }
     } catch (error) {
       console.error('Error deleting task:', error);
-      setError(error.message || 'Failed to delete task. Please try again.');
+      const errorMsg = error.message || 'Failed to delete task. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setDeletingTaskId(null); // Clear the deleting state
     }
@@ -257,17 +260,6 @@ function MyTodos() {
           </button>
         </form>
         
-        {error && (
-          <div className="error-message">
-            <p>{error}</p>
-          </div>
-        )}
-        
-        {successMessage && (
-          <div className="success-message">
-            <p>{successMessage}</p>
-          </div>
-        )}
       </section>
 
       <section className="todos-list">

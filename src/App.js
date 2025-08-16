@@ -7,6 +7,7 @@ import Home from './components/Home';
 import MyTodos from './components/MyTodos';
 import Navbar from './components/Navbar';
 import GhostLoader from './components/GhostLoader';
+import { ToastProvider } from './components/Toast/ToastContext';
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -116,41 +117,43 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        {/* Render RedirectHandler to handle session expiration redirects */}
-        <RedirectHandler />
-        
-        {/* Show error message if authentication check failed */}
-        {authState.error && (
-          <div className="auth-error-banner">
-            {authState.error}
-          </div>
-        )}
-        
-        {/* Navbar is always visible, regardless of authentication state */}
-        <Navbar authState={authState} />
-        
-        {/* Show loading state only for the content area while authentication is being validated */}
-        <div className="content-container">
-          {authState.loading ? (
-            <GhostLoader />
-          ) : (
-          <Routes>
-            <Route path="/" element={<Home isAuthenticated={authState.isAuthenticated} />} />
-            <Route path="/register" element={<Registration />} />
-            <Route path="/login" element={<Login setAuthState={setAuthState} />} />
-            <Route
-              path="/mytodos"
-              element={
-                authState.isAuthenticated ?
-                <MyTodos /> :
-                <Login setAuthState={setAuthState} />
-              }
-            />
-          </Routes>
+      <ToastProvider>
+        <div className="App">
+          {/* Render RedirectHandler to handle session expiration redirects */}
+          <RedirectHandler />
+          
+          {/* Show error message if authentication check failed */}
+          {authState.error && (
+            <div className="auth-error-banner">
+              {authState.error}
+            </div>
           )}
+          
+          {/* Navbar is always visible, regardless of authentication state */}
+          <Navbar authState={authState} />
+          
+          {/* Show loading state only for the content area while authentication is being validated */}
+          <div className="content-container">
+            {authState.loading ? (
+              <GhostLoader />
+            ) : (
+            <Routes>
+              <Route path="/" element={<Home isAuthenticated={authState.isAuthenticated} />} />
+              <Route path="/register" element={<Registration />} />
+              <Route path="/login" element={<Login setAuthState={setAuthState} />} />
+              <Route
+                path="/mytodos"
+                element={
+                  authState.isAuthenticated ?
+                  <MyTodos /> :
+                  <Login setAuthState={setAuthState} />
+                }
+              />
+            </Routes>
+            )}
+          </div>
         </div>
-      </div>
+      </ToastProvider>
     </Router>
   );
 }

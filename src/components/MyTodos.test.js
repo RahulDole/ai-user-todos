@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MyTodos from './MyTodos';
+import { ToastProvider } from './Toast/ToastContext';
 
 // Mock the useNavigate hook
 jest.mock('react-router-dom', () => ({
@@ -118,7 +119,11 @@ describe('MyTodos Component', () => {
     });
     
     // Render the component
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     // Check if the component renders the todo list header
     expect(screen.getByText('My ToDo List')).toBeInTheDocument();
@@ -176,7 +181,11 @@ describe('MyTodos Component', () => {
       })
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the loading indicator to disappear
@@ -251,7 +260,11 @@ describe('MyTodos Component', () => {
       });
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
 
     try {
       // Wait for the initial tasks to load
@@ -313,7 +326,11 @@ describe('MyTodos Component', () => {
       });
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the tasks to load
@@ -391,7 +408,11 @@ describe('MyTodos Component', () => {
       });
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the tasks to load
@@ -431,7 +452,11 @@ describe('MyTodos Component', () => {
     // Mock window.confirm to always return true
     window.confirm = jest.fn(() => true);
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the tasks to load
@@ -516,7 +541,11 @@ describe('MyTodos Component', () => {
       });
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the tasks to load
@@ -559,7 +588,11 @@ describe('MyTodos Component', () => {
     // Mock window.confirm to return false (user cancels)
     window.confirm = jest.fn(() => false);
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
     
     try {
       // Wait for the tasks to load
@@ -619,7 +652,11 @@ describe('MyTodos Component', () => {
       });
     });
     
-    render(<MyTodos />);
+    render(
+      <ToastProvider>
+        <MyTodos />
+      </ToastProvider>
+    );
 
     try {
       // Wait for the error state to appear
