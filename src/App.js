@@ -97,7 +97,10 @@ function App() {
   // Check authentication status on page load/refresh
   useEffect(() => {
     checkAuthStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Note: We're intentionally disabling the exhaustive-deps rule here
+  // as we only want to run this effect once on component mount
 
   // Redirect component for session expiration
   const RedirectHandler = () => {
@@ -110,11 +113,6 @@ function App() {
     
     return null;
   };
-
-  // Show loading state while authentication is being validated
-  if (authState.loading) {
-    return <GhostLoader />;
-  }
 
   return (
     <Router>
@@ -129,8 +127,14 @@ function App() {
           </div>
         )}
         
+        {/* Navbar is always visible, regardless of authentication state */}
         <Navbar authState={authState} />
+        
+        {/* Show loading state only for the content area while authentication is being validated */}
         <div className="content-container">
+          {authState.loading ? (
+            <GhostLoader />
+          ) : (
           <Routes>
             <Route path="/" element={<Home isAuthenticated={authState.isAuthenticated} />} />
             <Route path="/register" element={<Registration />} />
@@ -144,6 +148,7 @@ function App() {
               }
             />
           </Routes>
+          )}
         </div>
       </div>
     </Router>
