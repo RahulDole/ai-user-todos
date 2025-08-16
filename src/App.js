@@ -1,17 +1,20 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Registration from './components/Registration';
 import Login from './components/Login';
 import Home from './components/Home';
 import MyTodos from './components/MyTodos';
 import Navbar from './components/Navbar';
+import GhostLoader from './components/GhostLoader';
 
 function App() {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     user: null,
-    loading: true
+    loading: true,
+    sessionExpired: false,
+    error: null
   });
 
   // Function to check authentication status
@@ -25,7 +28,9 @@ function App() {
         setAuthState({
           isAuthenticated: false,
           user: null,
-          loading: false
+          loading: false,
+          sessionExpired: false,
+          error: null
         });
         return;
       }
@@ -41,13 +46,26 @@ function App() {
         }
       );
       
-      // If response is not ok, token might be invalid or expired
-      if (!response.ok) {
+      // Handle different response statuses
+      if (response.status === 401) {
+        // Unauthorized - token expired or invalid
         localStorage.removeItem('authToken'); // Clear invalid token
         setAuthState({
           isAuthenticated: false,
           user: null,
-          loading: false
+          loading: false,
+          sessionExpired: true,
+          error: null
+        });
+        return;
+      } else if (!response.ok) {
+        // Other error responses
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          loading: false,
+          sessionExpired: false,
+          error: `Server error: ${response.status}`
         });
         return;
       }
@@ -59,7 +77,9 @@ function App() {
       setAuthState({
         isAuthenticated: true,
         user: userData,
-        loading: false
+        loading: false,
+        sessionExpired: false,
+        error: null
       });
       
     } catch (error) {
@@ -67,7 +87,9 @@ function App() {
       setAuthState({
         isAuthenticated: false,
         user: null,
-        loading: false
+        loading: false,
+        sessionExpired: false,
+        error: 'Network error: Unable to validate authentication'
       });
     }
   };
@@ -77,9 +99,36 @@ function App() {
     checkAuthStatus();
   }, []);
 
+  // Redirect component for session expiration
+  const RedirectHandler = () => {
+    const location = useLocation();
+    
+    // If session expired and user is not already on home page, redirect to home
+    if (authState.sessionExpired && location.pathname !== '/') {
+      return <Navigate to="/" replace />;
+    }
+    
+    return null;
+  };
+
+  // Show loading state while authentication is being validated
+  if (authState.loading) {
+    return <GhostLoader />;
+  }
+
   return (
     <Router>
       <div className="App">
+        {/* Render RedirectHandler to handle session expiration redirects */}
+        <RedirectHandler />
+        
+        {/* Show error message if authentication check failed */}
+        {authState.error && (
+          <div className="auth-error-banner">
+            {authState.error}
+          </div>
+        )}
+        
         <Navbar authState={authState} />
         <div className="content-container">
           <Routes>
